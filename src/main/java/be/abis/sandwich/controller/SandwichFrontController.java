@@ -1,14 +1,11 @@
 package be.abis.sandwich.controller;
 
-import be.abis.sandwich.exception.ApiException;
 import be.abis.sandwich.model.Sandwich;
-import jakarta.annotation.security.RolesAllowed;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -18,7 +15,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-public class Sandmin {
+public class SandwichFrontController {
     @Autowired
     private RestTemplate rt;
 
@@ -35,9 +32,16 @@ public class Sandmin {
 
     @PatchMapping(path = "/mgmt/sandwich", consumes = {MediaType.APPLICATION_JSON_VALUE})
 //    @RolesAllowed("AbisAdmin")
-    public void updateSandwichPrice(Sandwich sandwich) {
-        System.out.println("[FRONT][Controller] UPDATESANDWICHPRICE");
-        rt.patchForObject(uri_sandwichapi_mgmt + "/sandwich", sandwich, Void.class);
+    public void updateSandwichPrice(@RequestBody Sandwich sandwich) {
+        System.out.println("[FRONT][Controller] UPDATESANDWICHPRICE [" + sandwich.toString() + "]");
+
+        HttpHeaders headers = new HttpHeaders();
+        MediaType mediaType = new MediaType("application", "merge-patch+json");
+        headers.setContentType(mediaType);
+
+        HttpEntity<Sandwich> entity = new HttpEntity<>(sandwich, headers);
+            rt.exchange(uri_sandwichapi_mgmt + "/sandwich", HttpMethod.PATCH, entity, Void.class);
+//            rt.patchForObject(uri_sandwichapi_mgmt + "/sandwich", Obj.writeValueAsString(sandwich), Void.class);
         return;
     }
 
