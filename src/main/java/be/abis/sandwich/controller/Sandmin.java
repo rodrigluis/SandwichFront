@@ -45,29 +45,58 @@ public class Sandmin {
 //    @RolesAllowed("AbisAdmin")
     public void deleteSandwich(@PathVariable("id") int id) {
         System.out.println("[FRONT][Controller] DELETESANDWICH");
+
         rt.delete(uri_sandwichapi_mgmt + "/sandwich/" + id, id);
         return;
     }
 
     @GetMapping(path = "/sandwiches/all")
-    public List<Sandwich> getAllSandwiches() {
+    public ResponseEntity<?> getAllSandwiches() {
         System.out.println("[FRONT][Controller] GETALLSANDWICHES");
-//    public List<Sandwich> getAllSandwiches(@RequestHeader("User") String user, @RequestHeader("Password") String password) {
-        ResponseEntity<List<Sandwich>> responseEntity = rt.exchange(uri_sandwichapi_user + "/sandwiches/all", HttpMethod.GET, null, new ParameterizedTypeReference<List<Sandwich>>() {});
-        return responseEntity.getBody();
+
+        URI uri = UriComponentsBuilder
+                .fromUri(URI.create(uri_sandwichapi_user + "/sandwiches/all"))
+                .build()
+                .toUri();
+
+        ResponseEntity<List<Sandwich>> responseEntity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        try {
+            responseEntity = rt.exchange(uri,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Sandwich>>() {});
+            return responseEntity;
+        } catch (HttpClientErrorException hcee) {
+            System.out.println("[FRONT] API sent an error");
+            return new ResponseEntity<>(hcee.getMessage(), responseEntity.getStatusCode());
+        }
     }
 
     @GetMapping(path = "/sandwich/{id}")
-    public Sandwich getSandwichById(@PathVariable("id") int id) {
+    public ResponseEntity<?> getSandwichById(@PathVariable("id") int id) {
         System.out.println("[FRONT][Controller] GETSANDWICHBYID");
-        ResponseEntity<Sandwich> responseEntity = rt.exchange(uri_sandwichapi_user + "/sandwiches/" + id, HttpMethod.GET, null, new ParameterizedTypeReference<Sandwich>() {});
-        return responseEntity.getBody();
+
+        URI uri = UriComponentsBuilder
+                .fromUri(URI.create(uri_sandwichapi_user + "/sandwich/" + id))
+                .build()
+                .toUri();
+
+        ResponseEntity<Sandwich> apiResponseEntity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        try {
+            apiResponseEntity = rt.exchange(uri,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<Sandwich>() {});
+            return apiResponseEntity;
+        } catch (HttpClientErrorException hcee) {
+            System.out.println("[FRONT] API sent an error");
+            return new ResponseEntity<>(hcee.getMessage(), apiResponseEntity.getStatusCode());
+        }
     }
 
     @GetMapping(path = "/sandwich")
     public ResponseEntity<?> getSandwichByName(@RequestParam("name") String name) {
         System.out.println("[FRONT][Controller] GETSANDWICHBYNAME");
-//        String queryParam = "name" + name + "\"}";
 
         URI uri = UriComponentsBuilder
                 .fromUri(URI.create(uri_sandwichapi_user + "/sandwich"))
@@ -84,21 +113,30 @@ public class Sandmin {
             return apiResponseEntity;
         } catch (HttpClientErrorException hcee) {
             System.out.println("[FRONT] API sent an error");
-            return new ResponseEntity<>(apiResponseEntity.getBody(), apiResponseEntity.getStatusCode());
+            return new ResponseEntity<>(hcee.getMessage(), apiResponseEntity.getStatusCode());
         }
     }
 
     @GetMapping(path = "/sandwiches")
-    public List<Sandwich> getAllSandwichesByCategory(@RequestParam("category") String category) {
+    public ResponseEntity<?> getAllSandwichesByCategory(@RequestParam("category") String category) {
         System.out.println("[FRONT][Controller] GETSANDWICHESBYCATEGORY");
-        String queryParam = "{\"category\":\" " + category + "\"}";
 
         URI uri = UriComponentsBuilder
                 .fromUri(URI.create(uri_sandwichapi_user + "/sandwiches"))
-                .queryParam("q", queryParam)
+                .queryParam("category", category)
                 .build()
                 .toUri();
-        ResponseEntity<List<Sandwich>> responseEntity = rt.exchange(uri, HttpMethod.GET, null, new ParameterizedTypeReference<List<Sandwich>>() {});
-        return responseEntity.getBody();
+
+        ResponseEntity<List<Sandwich>> apiResponseEntity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        try {
+            apiResponseEntity = rt.exchange(uri,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Sandwich>>() {});
+            return apiResponseEntity;
+        } catch (HttpClientErrorException hcee) {
+            System.out.println("[FRONT] API sent an error");
+            return new ResponseEntity<>(hcee.getMessage(), apiResponseEntity.getStatusCode());
+        }
     }
 }
