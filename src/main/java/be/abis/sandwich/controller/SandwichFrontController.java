@@ -35,13 +35,13 @@ public class SandwichFrontController {
     public void updateSandwichPrice(@RequestBody Sandwich sandwich) {
         System.out.println("[FRONT][Controller] UPDATESANDWICHPRICE [" + sandwich.toString() + "]");
 
-        HttpHeaders headers = new HttpHeaders();
-        MediaType mediaType = new MediaType("application", "merge-patch+json");
-        headers.setContentType(mediaType);
+//        HttpHeaders headers = new HttpHeaders();
+//        MediaType mediaType = new MediaType("application", "merge-patch+json");
+//        headers.setContentType(mediaType);
 
-        HttpEntity<Sandwich> entity = new HttpEntity<>(sandwich, headers);
-            rt.exchange(uri_sandwichapi_mgmt + "/sandwich", HttpMethod.PATCH, entity, Void.class);
-//            rt.patchForObject(uri_sandwichapi_mgmt + "/sandwich", Obj.writeValueAsString(sandwich), Void.class);
+        HttpEntity<Sandwich> entity = new HttpEntity<>(sandwich);
+//            rt.exchange(uri_sandwichapi_mgmt + "/sandwich", HttpMethod.PATCH, entity, Void.class);
+            rt.patchForObject(uri_sandwichapi_mgmt + "/sandwich", sandwich, Void.class);
         return;
     }
 
