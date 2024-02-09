@@ -1,11 +1,12 @@
 package be.abis.sandwich.controller;
 
+import be.abis.sandwich.model.Credentials;
 import be.abis.sandwich.model.Sandwich;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -18,20 +19,23 @@ import java.util.List;
 public class SandwichFrontController {
     @Autowired
     private RestTemplate rt;
+    @Autowired
+    private Credentials credentials;
 
     private static final String uri_sandwichapi_mgmt = "http://localhost:8080/api/mgmt";
     private static final String uri_sandwichapi_user = "http://localhost:8080/api";
 
     @PostMapping(path = "/mgmt/sandwich")
-//    @RolesAllowed("AbisAdmin")
+    @RolesAllowed("AbisAdmin")
     public void addSandwich(@RequestBody Sandwich sandwich) {
         System.out.println("[FRONT][Controller] ADDSANDWICH");
+        rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
         rt.postForObject(uri_sandwichapi_mgmt + "/sandwich", sandwich, Void.class);
         return;
     }
 
     @PatchMapping(path = "/mgmt/sandwich", consumes = {MediaType.APPLICATION_JSON_VALUE})
-//    @RolesAllowed("AbisAdmin")
+    @RolesAllowed("AbisAdmin")
     public void updateSandwichPrice(@RequestBody Sandwich sandwich) {
         System.out.println("[FRONT][Controller] UPDATESANDWICHPRICE [" + sandwich.toString() + "]");
 
@@ -40,16 +44,18 @@ public class SandwichFrontController {
 //        headers.setContentType(mediaType);
 
         HttpEntity<Sandwich> entity = new HttpEntity<>(sandwich);
+        rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
 //            rt.exchange(uri_sandwichapi_mgmt + "/sandwich", HttpMethod.PATCH, entity, Void.class);
             rt.patchForObject(uri_sandwichapi_mgmt + "/sandwich", sandwich, Void.class);
         return;
     }
 
     @DeleteMapping(path = "/mgmt/sandwich/{id}")
-//    @RolesAllowed("AbisAdmin")
+    @RolesAllowed("AbisAdmin")
     public void deleteSandwich(@PathVariable("id") int id) {
         System.out.println("[FRONT][Controller] DELETESANDWICH");
 
+        rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
         rt.delete(uri_sandwichapi_mgmt + "/sandwich/" + id, id);
         return;
     }

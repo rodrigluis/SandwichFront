@@ -15,8 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-//@Configuration
-//@EnableWebSecurity
+@Configuration
+@EnableWebSecurity
 public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -52,4 +52,5 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
 */
