@@ -1,5 +1,6 @@
 package be.abis.sandwich.controller;
 
+import be.abis.sandwich.exception.ApiException;
 import be.abis.sandwich.model.Credentials;
 import be.abis.sandwich.model.Sandwich;
 import jakarta.annotation.security.RolesAllowed;
@@ -7,15 +8,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
 
-@RestController
+import static be.abis.sandwich.exception.ApiException.Type.NOT_ALLOWED;
+
+//@RestController
+@Controller
 public class SandwichFrontController {
     @Autowired
     private RestTemplate rt;
@@ -25,13 +34,56 @@ public class SandwichFrontController {
     private static final String uri_sandwichapi_mgmt = "http://localhost:8080/api/mgmt";
     private static final String uri_sandwichapi_user = "http://localhost:8080/api";
 
+    @GetMapping("/ui")
+    public String home(Model model) {
+        System.out.println("[FRONT][Controller] HOME form");
+
+        model.addAttribute("message", "SANDWICH FRONTEND UI");
+        return "home";
+    }
+
+    @GetMapping("/form")
+    public String form(Model model) {
+        System.out.println("[FRONT][Controller] FORM form");
+
+        return "Form";
+    }
+
+    @RequestMapping(value = "/sand", method = RequestMethod.GET)
+    public ModelAndView showForm() {
+//        https://spring.io/guides/gs/handling-form-submission
+        return new ModelAndView("form", "sandwich", new Sandwich());
+    }
+
+    @PostMapping(path = "/mgmt/new")
+//    @RolesAllowed("AbisAdmin")
+    public String submit(@ModelAttribute("sandwich") Sandwich sandwich,
+                            BindingResult result, ModelMap form) {
+        System.out.println("[FRONT][Controller] NEWSANDWICH");
+
+        if (result.hasErrors()) {
+            return "error";
+        }
+        form.addAttribute("name", sandwich.getName());
+        form.addAttribute("description", sandwich.getDescription());
+        form.addAttribute("id", sandwich.getId());
+        form.addAttribute("category", sandwich.getCategory());
+        form.addAttribute("basePrice", sandwich.getBasePrice());
+
+        rt.postForObject(uri_sandwichapi_mgmt + "/sandwich", sandwich, Void.class);
+        return "employeeView";
+    }
+
     @PostMapping(path = "/mgmt/sandwich")
     @RolesAllowed("AbisAdmin")
     public void addSandwich(@RequestBody Sandwich sandwich) {
         System.out.println("[FRONT][Controller] ADDSANDWICH");
-        rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
-        rt.postForObject(uri_sandwichapi_mgmt + "/sandwich", sandwich, Void.class);
-        return;
+        if (credentials.getUserName() != null) {
+            rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
+            rt.postForObject(uri_sandwichapi_mgmt + "/sandwich", sandwich, Void.class);
+            return;
+        }
+        throw new ApiException(NOT_ALLOWED);
     }
 
     @PatchMapping(path = "/mgmt/sandwich", consumes = {MediaType.APPLICATION_JSON_VALUE})
@@ -43,11 +95,14 @@ public class SandwichFrontController {
 //        MediaType mediaType = new MediaType("application", "merge-patch+json");
 //        headers.setContentType(mediaType);
 
-        HttpEntity<Sandwich> entity = new HttpEntity<>(sandwich);
-        rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
+        if (credentials.getUserName() != null) {
+            HttpEntity<Sandwich> entity = new HttpEntity<>(sandwich);
+            rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
 //            rt.exchange(uri_sandwichapi_mgmt + "/sandwich", HttpMethod.PATCH, entity, Void.class);
             rt.patchForObject(uri_sandwichapi_mgmt + "/sandwich", sandwich, Void.class);
-        return;
+            return;
+        }
+        throw new ApiException(NOT_ALLOWED);
     }
 
     @DeleteMapping(path = "/mgmt/sandwich/{id}")
@@ -55,9 +110,12 @@ public class SandwichFrontController {
     public void deleteSandwich(@PathVariable("id") int id) {
         System.out.println("[FRONT][Controller] DELETESANDWICH");
 
-        rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
-        rt.delete(uri_sandwichapi_mgmt + "/sandwich/" + id, id);
-        return;
+        if (credentials.getUserName() != null) {
+            rt.getInterceptors().add(new BasicAuthenticationInterceptor(credentials.getUserName(), credentials.getUserPassword()));
+            rt.delete(uri_sandwichapi_mgmt + "/sandwich/" + id, id);
+            return;
+        }
+        throw new ApiException(NOT_ALLOWED);
     }
 
     @GetMapping(path = "/sandwiches/all")

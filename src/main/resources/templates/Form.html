@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Getting Started: Handling Form Submission</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+  <h3>Welcome, Enter Sandwich Details</h3>
+
+  <form action="#" th:action="@{/mgmt/new}" th:object="${sandwich}" method="post">
+    <p>Id:          <input type="text" th:field="*{id}" /></p>
+    <p>Name:        <input type="text" th:field="*{name}" /></p>
+    <p>Description: <input type="text" th:field="*{description}" /></p>
+    <p>Category:    <input type="text" th:field="*{category}" /></p>
+    <p>Price:       <input type="double" th:field="*{basePrice}" /></p>
+    <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
+  </form>
+</body>
+</html>

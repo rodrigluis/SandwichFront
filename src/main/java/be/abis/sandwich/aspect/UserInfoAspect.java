@@ -28,6 +28,7 @@ public class UserInfoAspect {
 
     @Before("execution(* be.abis.sandwich.controller.*.*(..))")
     public void getUserInfo(JoinPoint pjp) {
+        System.out.println("----------");
         String up  = credentialsWithBasicAuthentication();
         if (up != null) {
             String[] cParts = up.split(":");

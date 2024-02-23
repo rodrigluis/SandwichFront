@@ -19,6 +19,7 @@ public class ApiException extends RuntimeException {
     }
 
     public enum Type {
+        NOT_ALLOWED(HttpStatus.FORBIDDEN, "Only administrators may do that"),
         NO_SANDWICH(HttpStatus.NO_CONTENT, "There is no sandwich"),
         ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "The sandwich already exists"),
         DOES_NOT_EXIST(HttpStatus.BAD_REQUEST, "The sandwich does not exist");

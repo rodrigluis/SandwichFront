@@ -15,7 +15,7 @@ import java.util.List;
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = ApiException.class)
     protected ResponseEntity<? extends Object> handleApiException(ApiException aex, WebRequest request) {
-        ApiError err = new ApiError(aex.getHttpStatus(), "[RESTAPI]" + aex.getMessage());
+        ApiError err = new ApiError(aex.getHttpStatus(), "[RESTAPI] " + aex.getMessage());
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add("content-type", MediaType.APPLICATION_PROBLEM_JSON_VALUE);
         return new ResponseEntity<ApiError>(err, responseHeaders, aex.getHttpStatus());
